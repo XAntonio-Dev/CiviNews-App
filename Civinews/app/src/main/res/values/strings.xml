@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Civinews</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Contraseña</string>
+    <string name="welcome_back">Bienvenido de vuelta!</string>
+    <string name="account_details">Detalles de la cuenta</string>
+    <string name="login_subtitle">EL FUTURO DE LAS NOTICIAS</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_button_loading">Cargando...</string>
+    <string name="login_button_text">Iniciar Sesión</string>
+    <string name="login_or_separator"> O </string>
+    <string name="login_google_cd">Logo de Google</string>
+    <string name="login_google_button">Continuar con Google</string>
+    <string name="home_fab_new_report">NUEVO AVISO</string>
+    <string name="home_subtitle_community">COMUNIDAD LOCAL</string>
+    <string name="home_title_reports">Reportes de hoy</string>
+    <string name="category_all">Todos</string>
+    <string name="category_security">Seguridad</string>
+    <string name="category_traffic">Tráfico</string>
+    <string name="category_events">Eventos</string>
+    <string name="home_no_data_category">No hay reportes recientes en la categoría de %1$s.</string>
+    <string name="report_location_unknown">Ubicación no disponible</string>
+    <string name="bullet_separator">"  •  "</string>
+</resources>

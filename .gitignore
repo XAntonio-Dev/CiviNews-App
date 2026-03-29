@@ -1,0 +1,63 @@
+# =========================
+# CARPETAS PERSONALES / LOCALES
+# =========================
+# Carpeta con pruebas, notas o secretos que no van a la entrega
+noSubirRepo/
+
+# =========================
+# ANDROID / GRADLE (Frontend)
+# =========================
+# Ignoramos builds y volcados de memoria
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+*.apk
+!CiviNews_Entrega1.apk
+
+# Configuración local de tu Android Studio (rutas del SDK, etc.)
+local.properties
+
+# =========================
+# IDEs (Android Studio / IntelliJ / VSCode)
+# =========================
+# Es mejor ignorar la carpeta .idea entera para evitar conflictos de configuración entre PCs
+.idea/
+.gradle/
+*.iml
+.vscode/
+
+# =========================
+# PYTHON / FASTAPI (Backend)
+# =========================
+# Entornos virtuales (el evaluador creará el suyo)
+venv/
+env/
+
+# Archivos compilados de Python y cachés
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Variables de entorno (contraseñas reales de base de datos, etc.)
+.env
+
+# Firmas de release (nunca subir al repositorio)
+*.keystore
+*.jks
+
+# =========================
+# DOCKER / BASE DE DATOS
+# =========================
+# Si Docker genera una carpeta local para guardar los datos de PostgreSQL, la ignoramos
+db_data/
+postgres_data/
+
+# =========================
+# SISTEMA OPERATIVO
+# =========================
+# Archivos basura que genera macOS o Windows automáticamente
+.DS_Store
+Thumbs.db
