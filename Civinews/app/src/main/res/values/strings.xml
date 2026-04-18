@@ -1,16 +1,27 @@
 <resources>
+    <!-- Generales y Autenticación -->
     <string name="app_name">Civinews</string>
     <string name="email_label">Email</string>
     <string name="password_label">Contraseña</string>
-    <string name="welcome_back">Bienvenido de vuelta!</string>
-    <string name="account_details">Detalles de la cuenta</string>
     <string name="login_subtitle">EL FUTURO DE LAS NOTICIAS</string>
+    <string name="register_subtitle">REGISTRO CIUDADANO</string>
     <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
-    <string name="login_button_loading">Cargando...</string>
-    <string name="login_button_text">Iniciar Sesión</string>
-    <string name="login_or_separator"> O </string>
-    <string name="login_google_cd">Logo de Google</string>
-    <string name="login_google_button">Continuar con Google</string>
+
+    <string name="auth_tab_login">Iniciar Sesión</string>
+    <string name="auth_tab_register">Registro</string>
+    <string name="auth_name_label">Nombre Completo</string>
+
+    <string name="auth_btn_login">Iniciar Sesión</string>
+    <string name="auth_btn_register">Crear Cuenta</string>
+    <string name="auth_btn_loading">Cargando...</string>
+
+    <string name="auth_or_login">O</string>
+    <string name="auth_or_register">O REGISTRARSE CON</string>
+
+    <string name="auth_google_button">Continuar con Google</string>
+    <string name="auth_google_cd">Logo de Google</string>
+
+    <!-- Home -->
     <string name="home_fab_new_report">NUEVO AVISO</string>
     <string name="home_subtitle_community">COMUNIDAD LOCAL</string>
     <string name="home_title_reports">Reportes de hoy</string>
@@ -21,4 +32,20 @@
     <string name="home_no_data_category">No hay reportes recientes en la categoría de %1$s.</string>
     <string name="report_location_unknown">Ubicación no disponible</string>
     <string name="bullet_separator">"  •  "</string>
+    <string name="login_button_loading">Cargando...</string>
+
+    <!-- Pantalla Nuevo Aviso -->
+    <string name="new_report_title">Nuevo Aviso\nCiudadano</string>
+    <string name="new_report_subtitle">Cuéntanos qué está pasando en tu barrio. Tu reporte es fundamental para mejorar nuestra comunidad.</string>
+    <string name="new_report_section_category">CATEGORÍA</string>
+    <string name="new_report_section_evidence">EVIDENCIA GRÁFICA</string>
+    <string name="new_report_add_photo">Añadir foto o video</string>
+    <string name="new_report_section_title">TÍTULO DEL AVISO</string>
+    <string name="new_report_title_hint">Qué está sucediendo</string>
+    <string name="new_report_section_location">UBICACIÓN</string>
+    <string name="new_report_location_hint">Nombre de la calle o punto de refer...</string>
+    <string name="new_report_section_details">DETALLES</string>
+    <string name="new_report_details_hint">Danos más información...</string>
+    <string name="new_report_btn_submit">ENVIAR REPORTE</string>
+    <string name="new_report_footer">Al enviar, aceptas nuestros términos de participación ciudadana y veracidad de la información.</string>
 </resources>

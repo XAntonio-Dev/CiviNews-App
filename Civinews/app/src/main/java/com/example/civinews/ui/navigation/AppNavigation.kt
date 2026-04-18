@@ -6,15 +6,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.civinews.ui.screens.addReport.AddReportScreen
+import com.example.civinews.ui.screens.admin.AdminScreen
+import com.example.civinews.ui.screens.auth.AuthScreen
 import com.example.civinews.ui.screens.home.HomeScreen
-import com.example.civinews.ui.screens.login.LoginScreen
+import com.example.civinews.utils.Routes
 
-object Routes {
-    const val LOGIN = "login"
-    const val HOME = "home"
-}
-
-// Encapsulamos el NavHost para dejar el MainActivity limpio
 @Composable
 fun AppNavigation(
     modifier: Modifier = Modifier,
@@ -25,14 +22,20 @@ fun AppNavigation(
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = Routes.LOGIN
+        startDestination = Routes.AUTH
     ) {
-        composable(Routes.LOGIN) {
-            LoginScreen(
+        composable(Routes.AUTH) {
+            AuthScreen(
                 modifier = modifier,
-                onLoginSuccess = {
-                    navController.navigate(Routes.HOME) {
-                        popUpTo(Routes.LOGIN) { inclusive = true }
+                onAuthSuccess = { isAdmin ->
+                    if (isAdmin) {
+                        navController.navigate(Routes.ADMIN) {
+                            popUpTo(Routes.AUTH) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.AUTH) { inclusive = true }
+                        }
                     }
                 }
             )
@@ -42,7 +45,28 @@ fun AppNavigation(
             HomeScreen(
                 modifier = modifier,
                 isDarkTheme = isDarkTheme,
-                onThemeChange = onThemeChange
+                onThemeChange = onThemeChange,
+                onNavigateToAddReport = {
+                    navController.navigate(Routes.ADD_REPORT)
+                }
+            )
+        }
+
+        composable(Routes.ADD_REPORT) {
+            AddReportScreen(
+                modifier = modifier,
+                isDarkTheme = isDarkTheme,
+                onThemeChange = onThemeChange,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.ADMIN) {
+            AdminScreen(
+                modifier = modifier,
+                isDarkTheme = isDarkTheme,
+                onThemeChange = onThemeChange,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
     }

@@ -21,13 +21,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.Event
-import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.Traffic
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,7 +36,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +48,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.AsyncImage
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material3.CircularProgressIndicator
+import coil.compose.SubcomposeAsyncImage
 import com.example.civinews.R
 import com.example.civinews.ui.base.screens.ErrorScreen
 import com.example.civinews.ui.base.screens.LoadingScreen
@@ -65,12 +63,13 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     isDarkTheme: Boolean,
     onThemeChange: () -> Unit,
+    onNavigateToAddReport: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
     val events = HomeEvents(
         onCategorySelected = viewModel::selectCategory,
-        onNewReportClick = { /* TODO: Navegación */ }
+        onNewReportClick = onNavigateToAddReport
     )
 
     when (state) {
@@ -159,23 +158,12 @@ fun HomeContent(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // 1. Guardamos el ID del String (Int), no el texto resuelto
-                    val categories = listOf(
-                        R.string.category_all to Icons.Default.GridView,
-                        R.string.category_security to Icons.Default.Security,
-                        R.string.category_traffic to Icons.Default.Traffic,
-                        R.string.category_events to Icons.Default.Event
-                    )
-
-                    items(categories) { (nameResId, icon) ->
-                        // 2. Resolvemos el texto aquí dentro, que sí es un contexto Composable
-                        val name = stringResource(id = nameResId)
-
+                    // Iteramos sobre la lista dinámica que nos da el ViewModel
+                    items(state.categories) { categoryName ->
                         FilterChip(
-                            selected = state.selectedCategory == name,
-                            onClick = { events.onCategorySelected(name) },
-                            label = { Text(name) },
-                            leadingIcon = { Icon(icon, null, modifier = Modifier.size(18.dp)) }
+                            selected = state.selectedCategory == categoryName,
+                            onClick = { events.onCategorySelected(categoryName) },
+                            label = { Text(categoryName) }
                         )
                     }
                 }
@@ -207,7 +195,7 @@ fun ReportCard(report: ReportUiModel) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
     ) {
         Column {
-            AsyncImage(
+            SubcomposeAsyncImage(
                 model = report.imageUrl,
                 contentDescription = null,
                 modifier = Modifier
@@ -215,8 +203,35 @@ fun ReportCard(report: ReportUiModel) {
                     .height(180.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentScale = ContentScale.Crop,
-                placeholder = painterResource(id = R.drawable.ic_launcher_background),
-                error = painterResource(id = R.drawable.ic_launcher_foreground)
+                // Estado 1: Mientras carga (Spinner nativo centrado)
+                loading = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp
+                        )
+                    }
+                },
+                // Estado 2: Si la imagen falla o se borra de Cloudinary (Icono de error elegante)
+                error = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.BrokenImage,
+                                contentDescription = "Error de imagen",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    }
+                }
             )
 
             Column(modifier = Modifier.padding(20.dp)) {

@@ -1,0 +1,45 @@
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from uuid import UUID
+from datetime import datetime
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    username: str
+    password: str
+
+class ReportResponse(BaseModel):
+    id: UUID
+    titulo: str
+    contenido: str
+    imagen_url: Optional[str] = None
+    estado: str
+    ubicacion: Optional[str] = None
+    fecha_creacion: datetime
+    canal_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
+class ReportCreate(BaseModel):
+    titulo: str
+    contenido: str
+    categoria: str
+    ubicacion_texto: str
+    latitud: float
+    longitud: float
+    imagen_url: Optional[str] = None
+
+class CanalResponse(BaseModel):
+    id: int
+    nombre: str
+
+    class Config:
+        from_attributes = True
+
+class StatusUpdate(BaseModel):
+    estado: str

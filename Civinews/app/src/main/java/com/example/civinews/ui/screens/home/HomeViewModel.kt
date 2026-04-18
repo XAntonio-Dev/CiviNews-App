@@ -29,7 +29,6 @@ class HomeViewModel @Inject constructor(
     fun selectCategory(category: String) {
         val currentState = state
         if (currentState is HomeListState.Success) {
-
             val filteredList = if (category == "Todos") {
                 allReports
             } else {
@@ -48,15 +47,26 @@ class HomeViewModel @Inject constructor(
             state = HomeListState.Loading
             try {
                 val noticias = repository.getNoticias()
-                allReports = noticias // Guardamos el backup aquí
+                allReports = noticias
 
-                state = if (noticias.isEmpty()) {
-                    HomeListState.NoData
+                val officialChannels = repository.getAvailableChannels()
+
+                val dynamicCategories = if (officialChannels.isNotEmpty()) {
+                    listOf("Todos") + officialChannels
                 } else {
-                    HomeListState.Success(dataset = noticias)
+                    listOf("Todos") + noticias.map { it.category }.distinct().sorted()
+                }
+
+                if (noticias.isEmpty() && officialChannels.isEmpty()) {
+                    state = HomeListState.NoData
+                } else {
+                    state = HomeListState.Success(
+                        dataset = noticias,
+                        categories = dynamicCategories
+                    )
                 }
             } catch (e: Exception) {
-                state = HomeListState.Error(message = "Error de conexión")
+                state = HomeListState.Error(message = "Error de conexión: ${e.localizedMessage}")
             }
         }
     }

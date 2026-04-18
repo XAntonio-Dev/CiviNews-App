@@ -1,14 +1,19 @@
 package com.example.civinews.data.mapper
 
-import com.example.civinews.data.model.ReportResponse
+import com.example.civinews.data.models.ReportResponse
 import com.example.civinews.ui.screens.home.ReportUiModel
 
 fun ReportResponse.toUiModel(): ReportUiModel {
-    // Traducimos el ID de la base de datos al texto para los chips
+    // Traducimos el ID exacto de la base de datos al nombre real del canal
     val nombreCategoria = when (this.canalId) {
-        1 -> "Seguridad"
-        2 -> "Eventos"
-        3 -> "Tráfico"
+        1 -> "Tráfico y Movilidad"
+        2 -> "Infraestructuras"
+        3 -> "Limpieza y Medio Ambiente"
+        4 -> "Seguridad Ciudadana"
+        5 -> "Alerta Bulos"
+        6 -> "Gasto Público"
+        7 -> "Turismo y Convivencia"
+        8 -> "Política Local"
         else -> "Otros"
     }
 
@@ -19,6 +24,7 @@ fun ReportResponse.toUiModel(): ReportUiModel {
         status = this.estado,
         time = formatFecha(this.fechaCreacion),
         location = this.ubicacion ?: "Ubicación desconocida",
+        details = this.contenido,
         imageUrl = this.imagenUrl
     )
 }

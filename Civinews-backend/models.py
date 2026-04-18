@@ -4,7 +4,7 @@ import uuid
 from datetime import datetime
 from database import Base
 
-class Usuario(Base):
+class User(Base):
     __tablename__ = "usuarios"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     alias = Column(String(50), nullable=False)

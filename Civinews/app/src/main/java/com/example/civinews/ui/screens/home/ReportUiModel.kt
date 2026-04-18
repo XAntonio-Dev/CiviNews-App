@@ -4,6 +4,7 @@ package com.example.civinews.ui.screens.home
 data class ReportUiModel(
     val id: String,
     val title: String,
+    val details: String,
     val category: String,
     val status: String,
     val time: String,

@@ -1,9 +1,18 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    kotlin("kapt")
+}
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
 }
 
 android {
@@ -11,6 +20,7 @@ android {
     compileSdk = 36
 
     defaultConfig {
+        buildConfigField("String", "MAPBOX_TOKEN", "\"${localProperties.getProperty("MAPBOX_PUBLIC_TOKEN") ?: ""}\"")
         applicationId = "com.example.civinews"
         minSdk = 26
         targetSdk = 36
@@ -38,6 +48,12 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    // Forzar a que todo el proyecto use las anotaciones modernas y excluya las antiguas duplicadas
+    configurations.all {
+        exclude(group = "com.intellij", module = "annotations")
     }
 }
 
@@ -57,8 +73,9 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // --- HILT (Inyección de dependencias) ---
-    implementation("com.google.dagger:hilt-android:2.50")
-    kapt("com.google.dagger:hilt-android-compiler:2.50")
+    implementation("com.google.dagger:hilt-android:2.57")
+    kapt(libs.androidx.room.compiler)
+    kapt("com.google.dagger:hilt-android-compiler:2.57")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // --- RED (Retrofit, Gson, Corrutinas) ---
@@ -78,4 +95,13 @@ dependencies {
 
     // Librería para cargar imágenes por URL (Coil)
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // Mapbox Compose
+    implementation("com.mapbox.maps:android:11.2.0")
+    implementation("com.mapbox.extension:maps-compose:11.2.0")
+    implementation("com.mapbox.mapboxsdk:mapbox-sdk-services:6.15.0")
+
+    implementation("com.cloudinary:cloudinary-android:3.0.2")
 }
