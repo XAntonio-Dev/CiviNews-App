@@ -15,6 +15,7 @@ captures/
 
 *.apk
 !CiviNews_Entrega1.apk
+!CiviNews_Entrega2.apk
 
 # Configuración local de tu Android Studio (rutas del SDK, etc.)
 local.properties
