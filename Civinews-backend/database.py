@@ -1,13 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from config import settings
 
-SQLALCHEMY_DATABASE_URL = "postgresql://admin:root@db:5432/civinews"
-
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(settings.database_url)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 def get_db():
+    # Proveemos la sesión de BD y la cerramos al terminar
     db = SessionLocal()
     try:
         yield db
