@@ -110,4 +110,11 @@ class ReportRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun getMyReports(): List<ReportUiModel> {
+        return withContext(Dispatchers.IO) {
+            val response = api.getMyReports()
+            response.map { it.toUiModel() }
+        }
+    }
 }

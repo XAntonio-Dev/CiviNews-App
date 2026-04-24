@@ -2,6 +2,7 @@ package com.example.civinews.ui.screens.home
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -61,15 +62,15 @@ import com.example.civinews.ui.theme.newsreaderFontFamily
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    isDarkTheme: Boolean,
-    onThemeChange: () -> Unit,
+    onReportClick: (String) -> Unit,
     onNavigateToAddReport: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
     val events = HomeEvents(
         onCategorySelected = viewModel::selectCategory,
-        onNewReportClick = onNavigateToAddReport
+        onNewReportClick = onNavigateToAddReport,
+        onReportClick = onReportClick
     )
 
     when (state) {
@@ -82,8 +83,6 @@ fun HomeScreen(
         is HomeListState.Success -> {
             HomeContent(
                 modifier = modifier,
-                isDarkTheme = isDarkTheme,
-                onThemeChange = onThemeChange,
                 state = state,
                 events = events
             )
@@ -95,70 +94,48 @@ fun HomeScreen(
 @Composable
 fun HomeContent(
     modifier: Modifier = Modifier,
-    isDarkTheme: Boolean,
-    onThemeChange: () -> Unit,
     state: HomeListState.Success,
     events: HomeEvents
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        fontStyle = FontStyle.Italic,
-                        fontFamily = newsreaderFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 24.sp
-                    )
-                },
-                actions = {
-                    IconButton(onClick = onThemeChange) {
-                        Icon(
-                            imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = events.onNewReportClick,
-                containerColor = MaterialTheme.colorScheme.primary,
-                icon = { Icon(Icons.Default.Add, null) },
-                text = { Text(stringResource(id = R.string.home_fab_new_report), fontWeight = FontWeight.Bold) }
-            )
-        }
-    ) { paddingValues ->
+    // Usamos Box como contenedor principal para poder superponer el FAB
+    Box(modifier = modifier.fillMaxSize()) {
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Text(
-                    text = stringResource(id = R.string.home_subtitle_community),
-                    color = MaterialTheme.colorScheme.secondary,
+                    text = stringResource(id = R.string.home_subtitle_community).uppercase(),
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 1.5.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+
                 Text(
                     text = stringResource(id = R.string.home_title_reports),
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    lineHeight = 36.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Text(
+                    text = "Descubre lo que está pasando en tu ciudad y colabora para mejorar tu entorno.",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // Iteramos sobre la lista dinámica que nos da el ViewModel
                     items(state.categories) { categoryName ->
                         FilterChip(
                             selected = state.selectedCategory == categoryName,
@@ -178,19 +155,34 @@ fun HomeContent(
                 }
             } else {
                 items(state.dataset) { report ->
-                    ReportCard(report)
+                    // ARREGLADO: Ahora sí navega al detalle de esta noticia pasándole el ID
+                    ReportCard(report = report, onClick = { events.onReportClick(report.id) })
                 }
             }
 
             item { Spacer(modifier = Modifier.height(80.dp)) }
         }
+
+        // --- EL BOTÓN FLOTANTE VUELVE A LA VIDA ---
+        ExtendedFloatingActionButton(
+            onClick = events.onNewReportClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 24.dp, bottom = 88.dp), // Margen inferior para no taparlo con el BottomBar
+            icon = { Icon(Icons.Default.Add, contentDescription = "Añadir Aviso") },
+            text = { Text("Nuevo Aviso") },
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
     }
 }
 
 @Composable
-fun ReportCard(report: ReportUiModel) {
+fun ReportCard(report: ReportUiModel, onClick: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
     ) {
@@ -203,12 +195,8 @@ fun ReportCard(report: ReportUiModel) {
                     .height(180.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentScale = ContentScale.Crop,
-                // Estado 1: Mientras carga (Spinner nativo centrado)
                 loading = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(
                             color = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(24.dp),
@@ -216,12 +204,8 @@ fun ReportCard(report: ReportUiModel) {
                         )
                     }
                 },
-                // Estado 2: Si la imagen falla o se borra de Cloudinary (Icono de error elegante)
                 error = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
                                 imageVector = Icons.Default.BrokenImage,

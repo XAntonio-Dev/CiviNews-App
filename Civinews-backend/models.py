@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String, Boolean, DateTime, Text, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 import uuid
 from datetime import datetime
 from database import Base
@@ -13,11 +14,17 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
     fecha_registro = Column(DateTime, default=datetime.utcnow)
 
+    noticias = relationship("Noticia", back_populates="autor")
+
+
 class Canal(Base):
     __tablename__ = "canales"
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(50), unique=True, nullable=False)
     descripcion = Column(Text)
+
+    noticias = relationship("Noticia", back_populates="canal")
+
 
 class Noticia(Base):
     __tablename__ = "noticias"
@@ -31,3 +38,6 @@ class Noticia(Base):
     
     autor_id = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"))
     canal_id = Column(Integer, ForeignKey("canales.id"))
+
+    autor = relationship("User", back_populates="noticias")
+    canal = relationship("Canal", back_populates="noticias")

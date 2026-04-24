@@ -34,6 +34,9 @@ interface ApiService {
     @GET("noticias/pendientes")
     suspend fun getPendingNoticias(): List<ReportResponse>
 
+    @GET("noticias/mis-avisos")
+    suspend fun getMyReports(): List<ReportResponse>
+
     @PATCH("noticias/{id}/estado")
     suspend fun updateReportStatus(@retrofit2.http.Path("id") id: String, @Body request: StatusUpdateRequest): Response<Unit>
 

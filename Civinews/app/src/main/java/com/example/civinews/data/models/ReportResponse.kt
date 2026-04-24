@@ -10,5 +10,6 @@ data class ReportResponse(
     val estado: String,
     val ubicacion: String?,
     @SerializedName("fecha_creacion") val fechaCreacion: String,
-    @SerializedName("canal_id") val canalId: Int?
+    @SerializedName("canal_id") val canalId: Int?,
+    @SerializedName("autor_id") val autorId: String?
 )

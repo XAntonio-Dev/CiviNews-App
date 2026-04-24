@@ -71,7 +71,7 @@ import com.mapbox.maps.plugin.animation.MapAnimationOptions
 fun AddReportScreen(
     modifier: Modifier = Modifier,
     isDarkTheme: Boolean,
-    onThemeChange: () -> Unit,
+    onThemeChange: (Boolean) -> Unit,
     onNavigateBack: () -> Unit,
     viewModel: AddReportViewModel = hiltViewModel()
 ) {
@@ -102,7 +102,7 @@ fun AddReportScreen(
 fun AddReportContent(
     modifier: Modifier = Modifier,
     isDarkTheme: Boolean,
-    onThemeChange: () -> Unit,
+    onThemeChange: (Boolean) -> Unit,
     onNavigateBack: () -> Unit,
     state: AddReportState,
     events: AddReportEvents
@@ -143,7 +143,7 @@ fun AddReportContent(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onThemeChange) {
+                    IconButton(onClick = { onThemeChange(!isDarkTheme) }) {
                         Icon(
                             imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
                             contentDescription = "Cambiar tema",

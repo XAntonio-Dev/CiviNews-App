@@ -19,39 +19,28 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.BrokenImage
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
-import com.example.civinews.R
 import com.example.civinews.ui.base.screens.ErrorScreen
 import com.example.civinews.ui.base.screens.LoadingScreen
 import com.example.civinews.ui.base.screens.NoDataScreen
@@ -65,9 +54,9 @@ import java.util.Locale
 @Composable
 fun AdminScreen(
     modifier: Modifier = Modifier,
-    isDarkTheme: Boolean,
-    onThemeChange: () -> Unit,
-    onNavigateBack: () -> Unit,
+    //isDarkTheme: Boolean,
+    //onThemeChange: () -> Unit,
+    //onNavigateBack: () -> Unit,
     viewModel: AdminViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
@@ -79,14 +68,11 @@ fun AdminScreen(
 
     when (state) {
         is AdminListState.Loading -> LoadingScreen()
-        is AdminListState.NoData -> NoDataScreen(message = "No hay reportes pendientes de moderar.")
-        is AdminListState.Error -> ErrorScreen(message = state.message, onRetry = events.onRefresh)
+        is AdminListState.NoData -> NoDataScreen(modifier = modifier, message = "No hay reportes pendientes de moderar.")
+        is AdminListState.Error -> ErrorScreen(modifier = modifier, message = state.message, onRetry = events.onRefresh)
         is AdminListState.Success -> {
             AdminContent(
                 modifier = modifier,
-                isDarkTheme = isDarkTheme,
-                onThemeChange = onThemeChange,
-                onNavigateBack = onNavigateBack,
                 state = state,
                 events = events
             )
@@ -94,81 +80,49 @@ fun AdminScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminContent(
     modifier: Modifier = Modifier,
-    isDarkTheme: Boolean,
-    onThemeChange: () -> Unit,
-    onNavigateBack: () -> Unit,
     state: AdminListState.Success,
     events: AdminEvents
 ) {
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        fontStyle = FontStyle.Italic,
-                        fontFamily = newsreaderFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 24.sp
-                    )
-                },
-                actions = {
-                    IconButton(onClick = onThemeChange) {
-                        Icon(
-                            imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+    LazyColumn(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "MODERACIÓN",
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold,
+            )
+            Text(
+                text = "Avisos Pendientes",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Revisa y valida los reportes ciudadanos entrantes.",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
+        }
+
+        items(state.dataset) { report ->
+            AdminReportCard(
+                report = report,
+                onApprove = { events.onApproveClick(report.id) },
+                onDelete = { events.onDeleteClick(report.id) }
             )
         }
-    ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "MODERACIÓN",
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Avisos Pendientes",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Revisa y valida los reportes ciudadanos entrantes.",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-            }
 
-            items(state.dataset) { report ->
-                AdminReportCard(
-                    report = report,
-                    onApprove = { events.onApproveClick(report.id) },
-                    onDelete = { events.onDeleteClick(report.id) }
-                )
-            }
-
-            item { Spacer(modifier = Modifier.height(80.dp)) }
-        }
+        item { Spacer(modifier = Modifier.height(80.dp)) }
     }
 }
 

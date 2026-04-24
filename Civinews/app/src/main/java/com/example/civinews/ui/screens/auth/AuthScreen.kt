@@ -53,6 +53,10 @@ fun AuthScreen(
 ) {
     val state = viewModel.state
 
+    LaunchedEffect(Unit) {
+        viewModel.resetSuccessState() // Nos aseguramos de que no entre en bucle al hacer logout
+    }
+
     LaunchedEffect(state.isSuccess) {
         if (state.isSuccess) {
             onAuthSuccess(state.userIsAdmin)

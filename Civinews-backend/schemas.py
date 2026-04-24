@@ -21,6 +21,7 @@ class ReportResponse(BaseModel):
     ubicacion: Optional[str] = None
     fecha_creacion: datetime
     canal_id: Optional[int] = None
+    autor_id: Optional[UUID] = None
 
     class Config:
         from_attributes = True

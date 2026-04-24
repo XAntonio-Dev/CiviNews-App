@@ -2,6 +2,9 @@ package com.example.civinews.data.mapper
 
 import com.example.civinews.data.models.ReportResponse
 import com.example.civinews.ui.screens.home.ReportUiModel
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 fun ReportResponse.toUiModel(): ReportUiModel {
     // Traducimos el ID exacto de la base de datos al nombre real del canal
@@ -21,20 +24,21 @@ fun ReportResponse.toUiModel(): ReportUiModel {
         id = this.id,
         title = this.titulo,
         category = nombreCategoria,
-        status = this.estado,
         time = formatFecha(this.fechaCreacion),
         location = this.ubicacion ?: "Ubicación desconocida",
         details = this.contenido,
-        imageUrl = this.imagenUrl
+        imageUrl = this.imagenUrl,
+        status = this.estado
     )
 }
 
+// Queda privada para que solo el mapper la use internamente
 private fun formatFecha(fechaIso: String?): String {
     if (fechaIso == null) return "Hace un momento"
     return try {
         val cleanIso = fechaIso.split(".")[0]
-        val localDateTime = java.time.LocalDateTime.parse(cleanIso)
-        val formatter = java.time.format.DateTimeFormatter.ofPattern("dd MMM, HH:mm", java.util.Locale.getDefault())
+        val localDateTime = LocalDateTime.parse(cleanIso)
+        val formatter = DateTimeFormatter.ofPattern("dd MMM, HH:mm", Locale.getDefault())
         localDateTime.format(formatter)
     } catch (e: Exception) {
         "Recién publicado"

@@ -7,9 +7,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.civinews.ui.screens.addReport.AddReportScreen
-import com.example.civinews.ui.screens.admin.AdminScreen
 import com.example.civinews.ui.screens.auth.AuthScreen
-import com.example.civinews.ui.screens.home.HomeScreen
+import com.example.civinews.ui.screens.main.AdminMainScreen
+import com.example.civinews.ui.screens.main.UserMainScreen
+import com.example.civinews.ui.screens.main.UserMainScreen
 import com.example.civinews.utils.Routes
 
 @Composable
@@ -17,56 +18,58 @@ fun AppNavigation(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
     isDarkTheme: Boolean,
-    onThemeChange: () -> Unit
+    onThemeChange: (Boolean) -> Unit
 ) {
     NavHost(
         modifier = modifier,
         navController = navController,
         startDestination = Routes.AUTH
     ) {
+        // Pantalla de Auth: Solo contenido, sin barras ni tema
         composable(Routes.AUTH) {
             AuthScreen(
-                modifier = modifier,
                 onAuthSuccess = { isAdmin ->
-                    if (isAdmin) {
-                        navController.navigate(Routes.ADMIN) {
-                            popUpTo(Routes.AUTH) { inclusive = true }
-                        }
-                    } else {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.AUTH) { inclusive = true }
-                        }
+                    val destination = if (isAdmin) Routes.ADMIN else Routes.MAIN_APP
+                    navController.navigate(destination) {
+                        popUpTo(Routes.AUTH) { inclusive = true }
                     }
                 }
             )
         }
 
-        composable(Routes.HOME) {
-            HomeScreen(
-                modifier = modifier,
+        // El Jefe de Ciudadanos: Tiene el Switch y la BottomBar
+        composable(Routes.MAIN_APP) {
+            UserMainScreen(
                 isDarkTheme = isDarkTheme,
                 onThemeChange = onThemeChange,
-                onNavigateToAddReport = {
-                    navController.navigate(Routes.ADD_REPORT)
+                onNavigateToAddReport = { navController.navigate(Routes.ADD_REPORT) },
+                onLogout = {
+                    navController.navigate(Routes.AUTH) {
+                        popUpTo(Routes.MAIN_APP) { inclusive = true }
+                    }
                 }
             )
         }
 
+        // Pantalla de Acción: Solo contenido
         composable(Routes.ADD_REPORT) {
             AddReportScreen(
-                modifier = modifier,
+                onNavigateBack = { navController.popBackStack() },
                 isDarkTheme = isDarkTheme,
-                onThemeChange = onThemeChange,
-                onNavigateBack = { navController.popBackStack() }
+                onThemeChange = onThemeChange
             )
         }
 
+        // El Jefe de Admins: Su propio contenedor (AdminMainScreen)
         composable(Routes.ADMIN) {
-            AdminScreen(
-                modifier = modifier,
+            AdminMainScreen(
                 isDarkTheme = isDarkTheme,
                 onThemeChange = onThemeChange,
-                onNavigateBack = { navController.popBackStack() }
+                onLogout = {
+                    navController.navigate(Routes.AUTH) {
+                        popUpTo(Routes.ADMIN) { inclusive = true }
+                    }
+                }
             )
         }
     }

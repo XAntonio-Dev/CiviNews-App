@@ -6,6 +6,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.civinews.data.local.AuthPreferences
 import com.example.civinews.data.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val authPreferences: AuthPreferences
 ) : ViewModel() {
 
     var state by mutableStateOf(AuthState())
@@ -73,13 +75,12 @@ class AuthViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = { response ->
-                    // ¡Éxito! Aquí ya tenemos el token y los datos del usuario.
-                    // TODO: Guardar response.access_token en DataStore/SharedPreferences
-                    state = state.copy(
-                        isLoading = false,
-                        isSuccess = true,
-                        userIsAdmin = response.user.isAdmin // Sacamos si es admin del JSON
+                    authPreferences.saveAuthInfo(
+                        token = response.accessToken,
+                        isAdmin = response.user.isAdmin
                     )
+
+                    state = state.copy(isLoading = false, isSuccess = true, userIsAdmin = response.user.isAdmin)
                 },
                 onFailure = {
                     state = state.copy(
@@ -115,5 +116,9 @@ class AuthViewModel @Inject constructor(
                 }
             )
         }
+    }
+
+    fun resetSuccessState() {
+        state = state.copy(isSuccess = false)
     }
 }
