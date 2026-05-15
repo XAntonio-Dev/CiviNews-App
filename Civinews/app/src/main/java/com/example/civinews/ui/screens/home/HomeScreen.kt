@@ -51,7 +51,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import coil.compose.SubcomposeAsyncImage
 import com.example.civinews.R
 import com.example.civinews.ui.base.screens.ErrorScreen
@@ -97,7 +100,6 @@ fun HomeContent(
     state: HomeListState.Success,
     events: HomeEvents
 ) {
-    // Usamos Box como contenedor principal para poder superponer el FAB
     Box(modifier = modifier.fillMaxSize()) {
 
         LazyColumn(
@@ -155,7 +157,6 @@ fun HomeContent(
                 }
             } else {
                 items(state.dataset) { report ->
-                    // ARREGLADO: Ahora sí navega al detalle de esta noticia pasándole el ID
                     ReportCard(report = report, onClick = { events.onReportClick(report.id) })
                 }
             }
@@ -163,16 +164,31 @@ fun HomeContent(
             item { Spacer(modifier = Modifier.height(80.dp)) }
         }
 
-        // --- EL BOTÓN FLOTANTE VUELVE A LA VIDA ---
         ExtendedFloatingActionButton(
             onClick = events.onNewReportClick,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 24.dp, bottom = 88.dp), // Margen inferior para no taparlo con el BottomBar
-            icon = { Icon(Icons.Default.Add, contentDescription = "Añadir Aviso") },
-            text = { Text("Nuevo Aviso") },
+                .padding(end = 24.dp, bottom = 44.dp),
+            icon = {
+                Icon(
+                    imageVector = Icons.Rounded.Add,
+                    contentDescription = "Añadir Aviso",
+                    modifier = Modifier.size(26.dp)
+                )
+            },
+            text = {
+                Text(
+                    text = "NUEVO AVISO",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 14.sp
+                )
+            },
             containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            elevation = FloatingActionButtonDefaults.elevation(
+                defaultElevation = 6.dp,
+                pressedElevation = 12.dp
+            )
         )
     }
 }

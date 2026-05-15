@@ -11,5 +11,7 @@ data class AuthState(
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val userIsAdmin: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val showForgotPassDialog: Boolean = false,
+    val forgotPassEmail: String = ""
 )

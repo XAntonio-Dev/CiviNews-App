@@ -20,14 +20,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.civinews.ui.base.screens.ErrorScreen
 import com.example.civinews.ui.base.screens.LoadingScreen
 import com.example.civinews.ui.base.screens.NoDataScreen
-import com.example.civinews.ui.screens.home.ReportCard // Tu tarjeta maestra
+import com.example.civinews.ui.screens.home.ReportCard
 import com.example.civinews.ui.theme.newsreaderFontFamily
 
 
 @Composable
 fun MyReportsScreen(
     modifier: Modifier = Modifier,
-    onReportClick: (String) -> Unit, // Delegamos para la navegación a Detalles
+    onReportClick: (String) -> Unit,
     viewModel: MyReportsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state

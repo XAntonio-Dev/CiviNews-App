@@ -3,6 +3,8 @@ from typing import Optional
 from uuid import UUID
 from datetime import datetime
 
+# Esquemas Pydantic para la validación y transferencia de datos entre el cliente y la API
+
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -44,3 +46,29 @@ class CanalResponse(BaseModel):
 
 class StatusUpdate(BaseModel):
     estado: str
+
+class NameUpdateSchema(BaseModel):
+    name: str
+    
+class ReportDetailResponse(BaseModel):
+    id: UUID
+    titulo: str
+    contenido: str
+    imagen_url: Optional[str] = None
+    estado: str
+    ubicacion: Optional[str] = None
+    latitud: Optional[float] = None  
+    longitud: Optional[float] = None
+    fecha_creacion: datetime
+    autor_nombre: Optional[str] = None
+    canal_nombre: Optional[str] = None
+
+class Config:
+        from_attributes = True
+        
+class PasswordChangeSchema(BaseModel):
+    old_password: str
+    new_password: str
+
+class ForgotPasswordSchema(BaseModel):
+    email: EmailStr

@@ -23,9 +23,9 @@ services:
     # Exponemos el puerto de FastAPI al exterior
     ports:
       - "8000:8000"
-    # Instalamos las librerías al vuelo y arrancamos con recarga automática (--reload)
+    # Instalamos las librerías al vuelo y arrancamos con recarga automática 
     command: >
-      bash -c "pip install fastapi uvicorn sqlalchemy psycopg2-binary python-jose[cryptography] bcrypt email-validator pydantic-settings && 
+      bash -c "pip install -r requirements.txt && 
       uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       - db

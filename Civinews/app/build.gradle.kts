@@ -20,12 +20,16 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        buildConfigField("String", "MAPBOX_TOKEN", "\"${localProperties.getProperty("MAPBOX_PUBLIC_TOKEN") ?: ""}\"")
         applicationId = "com.example.civinews"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+
+        // Inyectamos el token directamente como recurso XML para que Mapbox lo lea en automático
+        val mapboxToken = localProperties.getProperty("MAPBOX_PUBLIC_TOKEN") ?: ""
+        resValue("string", "mapbox_access_token", mapboxToken)
+        buildConfigField("String", "MAPBOX_TOKEN", "\"$mapboxToken\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

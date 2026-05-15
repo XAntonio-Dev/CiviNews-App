@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     email VARCHAR(100) UNIQUE NOT NULL CHECK (email LIKE '%@%'),
     password_hash VARCHAR(255) NOT NULL,
     is_admin BOOLEAN DEFAULT FALSE,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_ultimo_cambio_alias TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS canales (
@@ -33,7 +34,9 @@ CREATE TABLE IF NOT EXISTS noticias (
     autor_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
     canal_id INT REFERENCES canales(id) ON DELETE SET NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ubicacion VARCHAR(100)
+    ubicacion VARCHAR(100),
+    latitud FLOAT,  -- <--- COLUMNA NUEVA
+    longitud FLOAT  -- <--- COLUMNA NUEVA
 );
 
 -- 4. ÍNDICES
@@ -79,65 +82,67 @@ BEGIN
     SELECT id INTO c_politica FROM canales WHERE nombre = 'Política Local';
 
     -- Usuarios Admin (contraseña: 123456)
+    INSERT INTO usuarios (alias, email, password_hash, is_admin) 
+    VALUES ('Admin Principal', 'admin@civinews.com', '$2b$12$xThmKKH9G1QW0C/7PuzIH.ojnILPcmPxEB13maTBpSKOiT62t7KMq', TRUE)
+    RETURNING id INTO user_id;
+
     INSERT INTO usuarios (alias, email, password_hash, is_admin) VALUES 
-    ('Admin Principal', 'admin@civinews.com', '$2b$12$xThmKKH9G1QW0C/7PuzIH.ojnILPcmPxEB13maTBpSKOiT62t7KMq', TRUE),
     ('Moderador Noche', 'mod@civinews.com', '$2b$12$xThmKKH9G1QW0C/7PuzIH.ojnILPcmPxEB13maTBpSKOiT62t7KMq', TRUE),
     ('Alcaldía', 'alcaldia@civinews.com', '$2b$12$xThmKKH9G1QW0C/7PuzIH.ojnILPcmPxEB13maTBpSKOiT62t7KMq', TRUE),
     ('test', 'test@test.com', '$2b$12$xThmKKH9G1QW0C/7PuzIH.ojnILPcmPxEB13maTBpSKOiT62t7KMq', FALSE);
 
-    -- Insertamos las 8 noticias fundadoras (Todas 'aprobada' para que salgan en la app de Android del tirón)
-    INSERT INTO noticias (titulo, contenido, imagen_url, estado, autor_id, canal_id, ubicacion) VALUES
+    -- Insertamos las 8 noticias fundadoras (Con LATITUD y LONGITUD en 3 de ellas)
+    INSERT INTO noticias (titulo, contenido, imagen_url, estado, autor_id, canal_id, ubicacion, latitud, longitud) VALUES
     (
         'Colapso total en hora punta', 
         'La A-357 está totalmente atascada dirección al PTA. Llevamos más de 40 minutos parados y no hay información sobre si es un accidente.', 
         'https://res.cloudinary.com/dtecznnri/image/upload/v1776110255/atasco_Coches_z5erk4.jpg', 
-        'aprobada', user_id, c_trafico, 'A-357, Málaga'
+        'aprobada', user_id, c_trafico, 'A-357, Málaga', 36.7335, -4.5126 -- <-- A-357 hacia el PTA
     ),
     (
         'Socavón tremendo sin señalizar', 
         'Ha aparecido este agujero gigante en mitad de la vía. Es un peligro brutal para las motos y los patinetes. El Ayuntamiento ni ha puesto vallas.', 
         'https://res.cloudinary.com/dtecznnri/image/upload/v1776110256/socavon_ViaPublica_h6mrsq.jpg', 
-        'aprobada', user_id, c_infra, 'Avenida de Andalucía'
+        'aprobada', user_id, c_infra, 'Avenida de Andalucía', NULL, NULL
     ),
     (
         'Vergüenza en la zona universitaria', 
         'Llevan tres días sin recoger la basura en esta calle. Los contenedores están a rebosar y con el calor el olor es insoportable.', 
         'https://res.cloudinary.com/dtecznnri/image/upload/v1776110256/ContenedorARebosar_DeBasura_n2sgdk.jpg', 
-        'aprobada', user_id, c_limpieza, 'Teatinos'
+        'aprobada', user_id, c_limpieza, 'Teatinos', 36.7171, -4.4735 -- <-- Bulevar Louis Pasteur (Teatinos)
     ),
     (
         'Fuerte dispositivo policial nocturno', 
         'Anoche cortaron la calle principal con varios furgones y luces de emergencia. Los vecinos estamos preocupados, necesitamos más información.', 
         'https://res.cloudinary.com/dtecznnri/image/upload/v1776110256/cochePolicia_ViaPublica_LucesEncendidas_ahozbb.jpg', 
-        'aprobada', user_id, c_seguridad, 'El Palo'
+        'aprobada', user_id, c_seguridad, 'El Palo', NULL, NULL
     ),
     (
         'FALSO: No van a cobrar por pasear por el centro', 
         'Está circulando por WhatsApp que el Ayuntamiento pondrá un peaje peatonal para residentes. Es un BULO. Confirmado por la alcaldía.', 
         'https://res.cloudinary.com/dtecznnri/image/upload/v1776110256/fakesNews_selloSobrePapel_hearc7.jpg', 
-        'aprobada', user_id, c_bulos, 'Todo el municipio'
+        'aprobada', user_id, c_bulos, 'Todo el municipio', NULL, NULL
     ),
     (
         'Obras del centro cívico, abandonadas', 
         'Otro proyecto millonario que se queda a medias. Las obras llevan paralizadas meses, la estructura está cogiendo humedad y el dinero público tirado.', 
         'https://res.cloudinary.com/dtecznnri/image/upload/v1776110256/obraSinTerminar_EnMedioDeLaCalle_rcvfns.jpg', 
-        'aprobada', user_id, c_gasto, 'Calle Victoria'
+        'aprobada', user_id, c_gasto, 'Calle Victoria', NULL, NULL
     ),
     (
         'Saturación en pleno centro', 
         'Ya es imposible pasear tranquilamente un martes por la tarde. Filas enormes, terrazas que invaden la calle y ruido constante.', 
         'https://res.cloudinary.com/dtecznnri/image/upload/v1776110256/calleLarios_ConUnosPocosGuirisAndando_rw3k7v.jpg', 
-        'aprobada', user_id, c_turismo, 'Calle Marqués de Larios'
+        'aprobada', user_id, c_turismo, 'Calle Marqués de Larios', 36.7189, -4.4211 -- <-- Calle Larios centro
     ),
     (
         'Concentración por la vivienda', 
         'Varios colectivos se han manifestado de espaldas a los furgones para pedir una regulación urgente de los alquileres.', 
         'https://res.cloudinary.com/dtecznnri/image/upload/v1776110257/policiaMirandoDeEspaldas_ManifestacionSinContexto_xzpwdc.jpg', 
-        'aprobada', user_id, c_politica, 'Plaza de la Constitución'
+        'aprobada', user_id, c_politica, 'Plaza de la Constitución', NULL, NULL
     );
 
-    -- Registros de prueba para la validación de la Vista de Administrador
-    -- Estos avisos aparecen con estado 'pendiente' para testear el flujo de moderación
+    -- Registros de prueba pendientes
     INSERT INTO noticias (titulo, contenido, estado, ubicacion, imagen_url, canal_id) VALUES 
         (
             'Falso aviso de corte de agua', 

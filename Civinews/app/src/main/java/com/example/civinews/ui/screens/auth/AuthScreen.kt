@@ -14,15 +14,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -40,9 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.civinews.R
+import com.example.civinews.ui.base.components.AlertDialogOkCancel
 import com.example.civinews.ui.base.components.EmailField
 import com.example.civinews.ui.base.components.PasswordField
-import com.example.civinews.ui.icons.GoogleIcon
 import com.example.civinews.ui.theme.newsreaderFontFamily
 
 @Composable
@@ -54,7 +55,7 @@ fun AuthScreen(
     val state = viewModel.state
 
     LaunchedEffect(Unit) {
-        viewModel.resetSuccessState() // Nos aseguramos de que no entre en bucle al hacer logout
+        viewModel.resetSuccessState()
     }
 
     LaunchedEffect(state.isSuccess) {
@@ -68,7 +69,11 @@ fun AuthScreen(
         onUsernameChange = viewModel::onUsernameChange,
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
-        onSubmitClick = viewModel::submit
+        onSubmitClick = viewModel::submit,
+        onShowForgotPassDialog = viewModel::showForgotPassDialog,
+        onDismissForgotPassDialog = viewModel::dismissForgotPassDialog,
+        onForgotPassEmailChange = viewModel::onForgotPassEmailChange,
+        onSubmitForgotPass = viewModel::submitForgotPassword
     )
 
     AuthContent(
@@ -86,7 +91,6 @@ fun AuthContent(
 ) {
     Box(modifier = modifier.fillMaxSize()) {
 
-        // Formulario normal de fondo
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -133,7 +137,14 @@ fun AuthContent(
                         OutlinedTextField(
                             value = state.username,
                             onValueChange = events.onUsernameChange,
-                            label = { Text(stringResource(id = R.string.auth_name_label)) },
+                            label = { Text("Nombre usuario") },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                )
+                            },
                             isError = state.usernameError != null,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp)
@@ -149,7 +160,17 @@ fun AuthContent(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    EmailField(value = state.email, onChange = events.onEmailChange)
+                    EmailField(
+                        value = state.email,
+                        onChange = events.onEmailChange,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            )
+                        }
+                    )
                     if (state.emailError != null) {
                         Text(
                             text = state.emailError,
@@ -161,7 +182,18 @@ fun AuthContent(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    PasswordField(value = state.password, onChange = events.onPasswordChange)
+                    PasswordField(
+                        value = state.password,
+                        onChange = events.onPasswordChange,
+                        label = "Contraseña",
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                            )
+                        }
+                    )
                     if (state.passwordError != null) {
                         Text(
                             text = state.passwordError,
@@ -174,10 +206,12 @@ fun AuthContent(
                     if (state.errorMessage != null) {
                         Text(
                             text = state.errorMessage,
-                            color = if (state.errorMessage.contains("creada")) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
+                            color = if (state.errorMessage.contains("creada") || state.errorMessage.contains("enlace")) Color(0xFF4CAF50) else MaterialTheme.colorScheme.error,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 16.dp).align(Alignment.CenterHorizontally)
+                            modifier = Modifier
+                                .padding(top = 16.dp)
+                                .align(Alignment.CenterHorizontally)
                         )
                     }
 
@@ -186,7 +220,7 @@ fun AuthContent(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.End
                         ) {
-                            TextButton(onClick = { /* TODO: Recuperar Pass */ }) {
+                            TextButton(onClick = events.onShowForgotPassDialog) {
                                 Text(
                                     text = stringResource(id = R.string.login_forgot_password),
                                     fontSize = 12.sp,
@@ -201,7 +235,9 @@ fun AuthContent(
 
                     Button(
                         onClick = events.onSubmitClick,
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
                         enabled = !state.isLoading,
                         shape = RoundedCornerShape(28.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
@@ -214,45 +250,38 @@ fun AuthContent(
                             fontSize = 16.sp
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
-                        Text(
-                            text = if (state.isLoginMode) stringResource(id = R.string.auth_or_login) else stringResource(id = R.string.auth_or_register),
-                            modifier = Modifier.padding(horizontal = 8.dp),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontWeight = FontWeight.Bold
-                        )
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outlineVariant)
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    OutlinedButton(
-                        onClick = { /* TODO: Google Auth */ },
-                        modifier = Modifier.fillMaxWidth().height(56.dp),
-                        shape = RoundedCornerShape(28.dp)
-                    ) {
-                        Icon(
-                            imageVector = GoogleIcon(),
-                            contentDescription = stringResource(id = R.string.auth_google_cd),
-                            tint = Color.Unspecified
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = stringResource(id = R.string.auth_google_button),
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
         }
 
-        // Capa oscura de carga superpuesta
+        if (state.showForgotPassDialog) {
+            AlertDialogOkCancel(
+                title = "Recuperar contraseña",
+                text = "Introduce tu email y te enviaremos las instrucciones.",
+                okText = "Enviar",
+                onConfirm = {
+                    events.onDismissForgotPassDialog()
+                    events.onSubmitForgotPass()
+                },
+                onDismiss = events.onDismissForgotPassDialog,
+                content = {
+                    Column(modifier = Modifier.padding(top = 8.dp)) {
+                        EmailField(
+                            value = state.forgotPassEmail,
+                            onChange = events.onForgotPassEmailChange,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Email,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                                )
+                            }
+                        )
+                    }
+                }
+            )
+        }
+
         if (state.isLoading) {
             Box(
                 modifier = Modifier
@@ -261,7 +290,7 @@ fun AuthContent(
                     .clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
-                    ) { /* Absorbe clics vacíos para bloquear el fondo */ },
+                    ) { },
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(

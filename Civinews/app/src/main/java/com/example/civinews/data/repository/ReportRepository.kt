@@ -5,8 +5,9 @@ import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 import com.example.civinews.data.mapper.toUiModel
-import com.example.civinews.data.models.ReportRequest
-import com.example.civinews.data.models.StatusUpdateRequest
+import com.example.civinews.data.models.report.ReportDetailResponse
+import com.example.civinews.data.models.report.ReportRequest
+import com.example.civinews.data.models.report.StatusUpdateRequest
 import com.example.civinews.data.network.ApiService
 import com.example.civinews.ui.screens.home.ReportUiModel
 import kotlinx.coroutines.Dispatchers
@@ -116,5 +117,9 @@ class ReportRepository @Inject constructor(
             val response = api.getMyReports()
             response.map { it.toUiModel() }
         }
+    }
+
+    suspend fun getReportDetail(id: String): ReportDetailResponse = withContext(Dispatchers.IO) {
+        api.getReportDetail(id)
     }
 }

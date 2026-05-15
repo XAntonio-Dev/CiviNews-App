@@ -34,7 +34,7 @@ class AddReportViewModel @Inject constructor(
             if (fetchedCategories.isNotEmpty()) {
                 state = state.copy(
                     categories = fetchedCategories,
-                    category = fetchedCategories.first() // Autoselecciona el primero
+                    category = fetchedCategories.first()
                 )
             }
         }
@@ -88,7 +88,6 @@ class AddReportViewModel @Inject constructor(
 
             result.fold(
                 onSuccess = {
-                    // Marcamos éxito para que la vista navegue hacia atrás
                     state = state.copy(isLoading = false, isSuccess = true)
                 },
                 onFailure = { error ->

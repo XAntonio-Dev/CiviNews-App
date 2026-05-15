@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Carga y expone la configuración global de la aplicación desde las variables de entorno del archivo .env
+
 class Settings(BaseSettings):
     database_url: str
     secret_key: str

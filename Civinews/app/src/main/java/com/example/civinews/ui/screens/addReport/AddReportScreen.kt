@@ -23,45 +23,38 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.civinews.BuildConfig
 import com.example.civinews.R
+import com.example.civinews.ui.base.components.CiviNewsTopBar
 import com.example.civinews.ui.theme.newsreaderFontFamily
-import com.mapbox.common.MapboxOptions
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.extension.compose.MapEffect
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
@@ -97,7 +90,7 @@ fun AddReportScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(MapboxExperimental::class)
 @Composable
 fun AddReportContent(
     modifier: Modifier = Modifier,
@@ -122,35 +115,11 @@ fun AddReportContent(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(id = R.string.app_name),
-                        fontStyle = FontStyle.Italic,
-                        fontFamily = newsreaderFontFamily,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 24.sp
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Volver atrás",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { onThemeChange(!isDarkTheme) }) {
-                        Icon(
-                            imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                            contentDescription = "Cambiar tema",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+            CiviNewsTopBar(
+                title = stringResource(id = R.string.app_name),
+                isDarkTheme = isDarkTheme,
+                onThemeChange = onThemeChange,
+                onNavigateBack = onNavigateBack
             )
         }
     ) { paddingValues ->
@@ -276,7 +245,6 @@ fun AddReportContent(
                     .height(200.dp)
                     .clip(RoundedCornerShape(12.dp))
             ) {
-                MapboxOptions.accessToken = BuildConfig.MAPBOX_TOKEN
                 MapboxMap(
                     modifier = Modifier.fillMaxSize(),
                     mapViewportState = viewportState,
@@ -337,6 +305,21 @@ fun AddReportContent(
                     letterSpacing = 1.sp
                 )
             }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Para mantener la calidad de la plataforma, el límite es de 3 avisos diarios por usuario.",
+                style = MaterialTheme.typography.labelMedium,
+                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
 
             Spacer(modifier = Modifier.height(16.dp))
 

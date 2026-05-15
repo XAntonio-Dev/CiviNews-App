@@ -35,11 +35,4 @@ class AuthPreferences(private val context: Context) {
             prefs[IS_ADMIN_KEY] = isAdmin
         }
     }
-
-    // Limpieza al cerrar sesión
-    suspend fun clearSession() {
-        context.dataStore.edit { prefs ->
-            prefs.clear()
-        }
-    }
 }

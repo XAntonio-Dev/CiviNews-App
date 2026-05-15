@@ -1,6 +1,6 @@
 package com.example.civinews.data.mapper
 
-import com.example.civinews.data.models.ReportResponse
+import com.example.civinews.data.models.report.ReportResponse
 import com.example.civinews.ui.screens.home.ReportUiModel
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

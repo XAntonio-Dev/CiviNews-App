@@ -5,5 +5,9 @@ data class AuthEvents(
     val onUsernameChange: (String) -> Unit,
     val onEmailChange: (String) -> Unit,
     val onPasswordChange: (String) -> Unit,
-    val onSubmitClick: () -> Unit
+    val onSubmitClick: () -> Unit,
+    val onShowForgotPassDialog: () -> Unit,
+    val onDismissForgotPassDialog: () -> Unit,
+    val onForgotPassEmailChange: (String) -> Unit,
+    val onSubmitForgotPass: () -> Unit
 )

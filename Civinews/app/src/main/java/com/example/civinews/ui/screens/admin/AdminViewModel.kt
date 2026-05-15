@@ -42,7 +42,7 @@ class AdminViewModel @Inject constructor(
 
     fun approveReport(id: String) {
         viewModelScope.launch {
-            state = AdminListState.Loading // Forzamos pantalla de carga
+            state = AdminListState.Loading
             delay(1000)
             val result = repository.approveReport(id)
             if (result.isSuccess) {
