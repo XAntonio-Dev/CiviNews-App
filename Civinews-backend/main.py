@@ -133,6 +133,13 @@ def get_mis_avisos(db: Session = Depends(get_db), current_user: models.User = De
         .all()
     return mis_noticias
 
+@app.get("/noticias/pendientes",
+    response_model=List[schemas.ReportResponse],
+    summary="Cola de moderación",
+    description="Devuelve los reportes pendientes de revisión ordenados del más antiguo al más reciente. Solo accesible para administradores.")
+def get_noticias_pendientes(db: Session = Depends(get_db), admin_user: models.User = Depends(get_current_admin_user)):
+    return db.query(models.Noticia).filter(models.Noticia.estado == "pendiente").order_by(models.Noticia.fecha_creacion.desc()).all()
+
 @app.get("/noticias/{noticia_id}",
     response_model=schemas.ReportDetailResponse,
     summary="Detalle de reporte",
@@ -163,13 +170,6 @@ def get_noticia_detail(noticia_id: UUID, db: Session = Depends(get_db), current_
 # ==========================================
 # RUTAS ADMINISTRADOR (Requieren Token Admin)
 # ==========================================
-
-@app.get("/noticias/pendientes",
-    response_model=List[schemas.ReportResponse],
-    summary="Cola de moderación",
-    description="Devuelve los reportes pendientes de revisión ordenados del más antiguo al más reciente. Solo accesible para administradores.")
-def get_noticias_pendientes(db: Session = Depends(get_db), admin_user: models.User = Depends(get_current_admin_user)):
-    return db.query(models.Noticia).filter(models.Noticia.estado == "pendiente").order_by(models.Noticia.fecha_creacion.desc()).all()
 
 @app.patch("/noticias/{noticia_id}/estado",
     summary="Moderar reporte",

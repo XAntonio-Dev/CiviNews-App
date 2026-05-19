@@ -19,8 +19,16 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(authInterceptor: AuthInterceptor): OkHttpClient {
+        // Chivato para ver las peticiones y errores en el Logcat
+        val logging = okhttp3.logging.HttpLoggingInterceptor().apply {
+            level = okhttp3.logging.HttpLoggingInterceptor.Level.BODY
+        }
+
         return OkHttpClient.Builder()
+            .addInterceptor(logging)
             .addInterceptor(authInterceptor)
+            .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS) // Tiempo extra para despertar a Render
+            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)    // Tiempo extra para despertar a Render
             .build()
     }
 
@@ -29,7 +37,7 @@ object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:8000/")
+            .baseUrl("https://civinews-app.onrender.com/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

@@ -19,3 +19,19 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# Ignorar advertencias de clases faltantes de Google usadas por MapBox
+-dontwarn com.google.android.gms.common.**
+-dontwarn com.google.android.gms.location.**
+-dontwarn com.google.android.gms.tasks.**
+-dontwarn com.google.auto.value.**
+
+# ==========================================
+# REGLAS PARA LA CAPA DE RED (Retrofit & Gson)
+# ==========================================
+-keep class retrofit2.** { *; }
+-keep class com.google.gson.** { *; }
+-keepattributes Signature, InnerClasses, EnclosingMethod
+
+# Mantener intactos tus modelos de datos y la API
+# (Esto evita que cambie los nombres de las variables)
+-keep class com.example.civinews.data.** { *; }

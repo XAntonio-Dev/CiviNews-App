@@ -1,72 +1,95 @@
 # Changelog
 
-All notable changes to **CiviNews** will be documented in this file.
+Todos los cambios relevantes de **CiviNews** están documentados en este archivo.
 
-This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and the format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+Este proyecto sigue [Semantic Versioning](https://semver.org/spec/v2.0.0.html) y el formato está basado en [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
 ## [1.1.0] — 2026-04-18
 
-> Segunda iteración del proyecto. El foco de esta entrega ha sido la moderación de contenido, la geolocalización y la reestructuración del backend hacia una arquitectura más limpia.
+> Versión final del TFG. El grueso del trabajo de esta iteración ha estado en tres frentes: cerrar el ciclo completo de moderación en el backend, implementar la geolocalización híbrida con MapBox y dejar la app lista para desplegarse en producción real. También se ha dado un repaso serio a la privacidad, al diseño y a varios bugs que habían sobrevivido desde la versión anterior.
+
+---
 
 ### Frontend — Android (Jetpack Compose)
 
 #### Added
-- **`AddReportScreen`**: pantalla de creación de reportes con mapa interactivo mediante el MapBox SDK.
-- Sistema de selección de ubicación por marcador arrastrable con captura de latitud y longitud exactas.
-- **`AdminScreen`**: panel de administración y moderación de contenido ciudadano.
-- Estados de interfaz reactivos en el panel de administración: `Loading`, `Success`, `NoData` y `Error`.
-- Controles de evento para la aprobación (`onApprove`) y eliminación (`onDelete`) de reportes en tiempo real.
-- Navegación condicional tras el login en función del rol del usuario.
-- Formateo de fechas relativas con `java.time` (p. ej. "Hace 5 minutos").
-- Integración de Coil con soporte para placeholders y gestión de caché de imágenes.
+
+- **Modo claro y oscuro (Material Design 3):** La interfaz se adapta automáticamente a las preferencias del sistema. No es cosmético: reduce la fatiga visual en uso prolongado y es uno de los estándares que se esperan hoy en día en cualquier app nativa.
+- **`AddReportScreen`:** Pantalla completa de creación de reportes. Incluye selector de categoría dinámico (cargado desde la API), campo de título, descripción, subida de imagen y el módulo de geolocalización con MapBox integrado.
+- **Geolocalización híbrida:** Combinación de un buscador de direcciones por texto (Mapbox Geocoding) y un marcador arrastrable en el mapa para el ajuste manual de coordenadas. Latitud y longitud se capturan con precisión y se envían al servidor junto al reporte.
+- **`AdminScreen`:** Panel de moderación protegido por rol. Solo accesible si `is_admin == true`. Muestra la cola de reportes pendientes con toda la información necesaria para tomar una decisión, y expone dos acciones directas por tarjeta: aprobar o rechazar.
+- **Estados reactivos en `AdminScreen`:** `Loading`, `Success`, `NoData` y `Error` implementados para que el administrador sepa en todo momento qué está pasando, incluso cuando la cola está vacía o hay un problema de red.
+- **`ReportDetailScreen`:** Vista de detalle de un reporte con mini-mapa inmersivo integrado que sitúa la incidencia en contexto sin necesidad de salir de la app.
+- **`MisAvisosScreen`:** Sección personal donde el ciudadano puede ver el estado actualizado de todos sus reportes (`pendiente`, `aprobada`, `rechazada`), cerrando el ciclo de feedback entre el usuario y la administración.
+- **Vistas legales y de soporte:** Pantallas de Política de Privacidad, Términos y Condiciones y Centro de Ayuda (FAQ) renderizadas como overlays, ocultando la barra de navegación inferior para forzar el foco en el contenido y evitar fugas de navegación.
+- **Danger Zone (Perfil):** Botón de borrado permanente de cuenta. Al confirmar, ejecuta un `DELETE` en el servidor que dispara el `ON DELETE CASCADE` en PostgreSQL, eliminando el usuario y todos sus datos asociados. Cumplimiento estricto del RGPD.
+- **Cambio de alias con límite temporal:** El usuario puede editar su nombre visible desde el perfil, pero solo una vez cada 14 días para evitar spam o suplantación.
+- Formateo de fechas relativas con `java.time`: "Hace 5 minutos", "Hace 2 horas", etc.
+- Navegación condicional tras el login según el rol: los administradores aterrizan en `AdminMainScreen` y los ciudadanos en `UserMainScreen`, gestionado desde el propio `NavHost` anidado.
 
 #### Changed
-- Refactorización de `AuthScreen` para unificar los flujos de login y registro.
-- Carga de categorías desde el endpoint `/canales`: la pantalla de creación ya no tiene categorías hardcodeadas.
+
+- **Refactorización de `AuthScreen`:** Se unificaron los flujos de login y registro en una sola pantalla con un toggle selector en la parte superior. Antes eran dos pantallas separadas. Reduce la carga cognitiva y elimina una pantalla de navegación innecesaria.
+- **Categorías dinámicas en `AddReportScreen`:** Las categorías ya no están escritas en el código. Se cargan desde el endpoint `/canales` en cada apertura de la pantalla. Si el servidor añade una categoría nueva, la app la muestra automáticamente sin necesitar actualización.
+- **Integración de Coil mejorada:** Añadido soporte completo para placeholders mientras carga la imagen, estados de error con imagen de fallback y gestión explícita de caché para no recargar imágenes que ya se han descargado.
 
 ---
 
-### Backend — Python (FastAPI)
+### Backend — API REST (FastAPI)
 
 #### Added
-- Nuevos endpoints RESTful:
-  - `POST /register` — registro de nuevos usuarios.
-  - `GET /canales` — listado dinámico de categorías desde base de datos.
-  - `POST /noticias` — creación de avisos con soporte para coordenadas geográficas.
-  - `GET /noticias/pendientes` — listado de contenido pendiente para el panel de moderación.
-  - `PATCH /noticias/{id}/estado` — actualización parcial del estado para validación de contenido.
-  - `DELETE /noticias/{id}` — eliminación física de registros rechazados.
-- Sistema de roles y permisos: distinción de privilegios entre `Administrador` y `Ciudadano`.
+
+- **`GET /noticias/pendientes`:** Devuelve todos los reportes con estado `pendiente`. Endpoint protegido: solo accesible con token JWT de un usuario con `is_admin = true`. Devuelve 403 si el rol no es suficiente.
+- **`PATCH /noticias/{id}/estado`:** Actualización parcial del estado de un reporte. Se usa `PATCH` y no `PUT` porque solo se modifica un campo, no el objeto entero. Requiere rol de administrador.
+- **`DELETE /noticias/{id}`:** Eliminación física del registro de la base de datos. Los reportes rechazados no se marcan como rechazados, se borran. Requiere rol de administrador.
+- **Sistema de roles (`is_admin`):** La distinción entre administrador y ciudadano se gestiona con un booleano en la tabla `usuarios`. FastAPI lo extrae del token JWT en cada petición a través de `Depends(get_current_user)` y lo evalúa antes de ejecutar cualquier operación de moderación.
+- **Borrado en cascada (RGPD):** La relación entre `usuarios` y `noticias` tiene definida la restricción `ON DELETE CASCADE` en PostgreSQL. Al borrar un usuario, todas sus publicaciones desaparecen también. No quedan datos huérfanos.
+- **Suite de tests automatizados con pytest:** Cobertura de los tres bloques principales del sistema:
+  - *Autenticación:* registro, login, obtención de JWT y escenarios de error (401, 400, 422).
+  - *Operaciones de usuario autenticado:* creación de noticias, validación de campos y control de acceso.
+  - *Panel de administración:* acceso sin permisos (403), aprobación con `PATCH`, borrado con `DELETE` y error sobre IDs inexistentes (404).
+  - Cada test sigue el patrón `arrange → act → assert` sobre una base de datos aislada que se inicializa y destruye en cada ejecución.
 
 #### Changed
-- Separación de `models.py` y `schemas.py`: los objetos de transferencia de datos (DTO) están ahora desacoplados de los modelos de base de datos.
-- Estandarización del hash de contraseñas con Bcrypt (prefijo `$2b$`) compatible con `passlib`.
+
+- **Separación de `models.py` y `schemas.py`:** Los modelos de SQLAlchemy (estructura interna de la BD) y los schemas de Pydantic v2 (lo que se expone al cliente) están ahora en archivos separados. El frontend nunca recibe la estructura real de la base de datos, solo los DTOs definidos en `schemas.py`.
+- **Hash de contraseñas estandarizado:** Migrado a Bcrypt con prefijo `$2b$` usando `passlib`. Compatible con la mayoría de herramientas del ecosistema Python y sin contraseñas en texto plano en ningún punto del sistema.
+
+#### Fixed
+
+- **Bug `422 Unprocessable Entity` en `/noticias/pendientes`:** FastAPI interpretaba `/pendientes` como un parámetro dinámico `/{id}` porque la ruta estática estaba declarada después de la dinámica en el router. Solucionado reordenando las rutas para que las estáticas tengan precedencia sobre las parametrizadas.
 
 ---
 
 ### Infraestructura y base de datos
 
 #### Added
-- Integración con Cloudinary CDN para el almacenamiento y servicio de imágenes.
-- Script `init.sql` ampliado con pre-populación de categorías, usuarios administradores y casos de prueba (Bulos, Infraestructuras y Gasto Público).
+
+- **Integración con Cloudinary CDN:** Las imágenes de los reportes se suben a Cloudinary en lugar de guardarse en el disco del servidor. La integración ha requerido implementar una función auxiliar con `suspendCancellableCoroutine` en Kotlin para adaptar la API de callbacks de Cloudinary al ecosistema de Coroutines, devolviendo la `secure_url` definitiva de forma asíncrona sin bloquear el hilo principal.
+- **Preparación para despliegue en producción:** El proyecto está listo para desplegarse en Render (API REST) y Supabase (PostgreSQL gestionado). Las variables sensibles se gestionan por `.env` localmente y por Environment Variables en el panel de Render en producción. El repositorio nunca versiona credenciales.
+- **Script `init.sql` ampliado:** Incluye la creación de tablas, la inserción de categorías iniciales (Alerta Bulos, Infraestructuras, Gasto Público) y dos usuarios de prueba preconfigurados (administrador y ciudadano) para poder probar el flujo completo desde el primer arranque.
 
 #### Changed
-- Optimización de `docker-compose.yml` para garantizar la persistencia de datos mediante volúmenes de PostgreSQL.
+
+- **Optimización de `docker-compose.yml`:** Configurados los volúmenes de PostgreSQL para garantizar la persistencia de datos entre reinicios del contenedor en el entorno local de desarrollo.
 
 ---
 
 ## [1.0.0] — 2026-03-29
 
-> Entrega inicial. Estructura base del proyecto con el stack completo conectado de extremo a extremo.
+> Primera entrega funcional. El objetivo de esta versión era tener el stack completo conectado de extremo a extremo aunque fuera con funcionalidades básicas. Frontend, backend y base de datos hablando entre sí antes de añadir complejidad.
 
 ### Added
-- Arquitectura base cliente-servidor (Android + FastAPI + PostgreSQL).
-- Feed de noticias con filtrado por categorías estáticas.
-- Sistema de login básico con validación de credenciales contra la base de datos.
-- Configuración inicial de contenedores Docker.
+
+- Arquitectura base cliente-servidor: app Android (Jetpack Compose) + API REST (FastAPI) + base de datos relacional (PostgreSQL), todo orquestado con Docker Compose.
+- Feed de noticias con filtrado por categorías (estáticas en esta versión, dinámicas desde la 1.1.0).
+- Sistema de autenticación con JWT: registro, login y validación de token en el cliente.
+- Pantalla de perfil básica con opción de cerrar sesión.
+- Configuración inicial de contenedores Docker con `docker-compose.yml`.
+- Documentación automática de la API disponible en `/docs` (Swagger/OpenAPI).
 
 ---
 
-*CiviNews — TFG 2025/2026 · Antonio Javier del Río Ramos*
+*CiviNews — TFG 2025/2026 · Antonio Javier del Río Ramos · IES Portada Alta, Málaga*
