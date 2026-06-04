@@ -12,11 +12,11 @@
 
 ---
 
-**Autor:** Antonio Javier del Río Ramos  
-**Titulación:** 2.º DAM — Desarrollo de Aplicaciones Multiplataforma  
-**Centro:** IES Portada Alta, Málaga  
-**Curso:** 2025/2026  
-**Versión:** `1.1.0`
+**Autor:** Antonio Javier del Río Ramos 
+**Titulación:** 2.º DAM — Desarrollo de Aplicaciones Multiplataforma 
+**Centro:** IES Portada Alta, Málaga 
+**Curso:** 2025/2026 
+**Versión:** `1.2.0`
 
 ---
 
@@ -122,6 +122,9 @@ Las categorías no están escritas en el código. Se cargan desde la base de dat
 | Aprobar reporte | Cambia el estado a `aprobada` y lo publica en el feed |
 | Rechazar reporte | Elimina el registro físicamente de la base de datos |
 | Control de acceso | Los endpoints de moderación están protegidos por rol |
+| Gestión de usuarios | Listado completo con búsqueda; accesible solo con rol admin |
+| Asignación de roles | Promueve a cualquier usuario a administrador directamente desde el panel |
+| Baneo de usuarios | Elimina permanentemente un usuario y todos sus reportes en cascada (RGPD) |
 
 ### Módulo de mapas
 
@@ -204,7 +207,8 @@ Se usa `PATCH` en lugar de `PUT` para el cambio de estado porque solo se modific
 | Base de datos | PostgreSQL |
 | Autenticación | JWT + Bcrypt (`passlib`, prefijo `$2b$`) |
 | Almacenamiento multimedia | Cloudinary CDN |
-| Tests | pytest + httpx |
+| Emails transaccionales | Mailtrap Sandbox |
+| Tests | pytest + httpx (22 tests E2E, 100% de cobertura) |
 
 ### Infraestructura
 
@@ -224,12 +228,16 @@ Se usa `PATCH` en lugar de `PUT` para el cambio de estado porque solo se modific
 ```
 POST   /register                  →  Registro de nuevos usuarios
 POST   /login                     →  Login y obtención de token JWT
+POST   /recuperar-password        →  Solicitar email de recuperación (Mailtrap Sandbox)
 GET    /canales                   →  Listado de categorías desde la BD
 GET    /noticias                  →  Feed público (solo aprobadas)
 POST   /noticias                  →  Crear reporte (autenticado)
 GET    /noticias/pendientes       →  Reportes sin revisar [Admin]
 PATCH  /noticias/{id}/estado      →  Aprobar reporte [Admin]
 DELETE /noticias/{id}             →  Eliminar reporte rechazado [Admin]
+GET    /usuarios                  →  Listar y buscar usuarios registrados [Admin]
+PATCH  /usuarios/{id}/rol         →  Asignar o revocar rol de administrador [Admin]
+DELETE /usuarios/{id}             →  Banear usuario con borrado en cascada [Admin]
 ```
 
 La documentación interactiva completa está disponible en `/docs` una vez levantado el servidor (Swagger/OpenAPI autogenerado por FastAPI).
@@ -307,8 +315,8 @@ Si el backend ya está desplegado en Render, esto no aplica: la app apunta direc
 
 | Rol | Email | Contraseña | Acceso |
 |---|---|---|---|
-| Administrador | `admin@civinews.com` | `123456` | Panel de moderación + todas las funciones |
-| Ciudadano | `test@test.com` | `123456` | Feed y creación de reportes |
+| Administrador | `admin@civinews.com` | `123456` | Panel de moderación de reportes + gestión de usuarios (roles y baneo) + todas las funciones de ciudadano |
+| Ciudadano | `test@test.com` | `123456` | Feed, creación de reportes y seguimiento de estado en Mis Avisos |
 
 La base de datos viene con reportes de ejemplo en las categorías Alerta Bulos, Gasto Público e Infraestructuras para que se pueda probar el flujo completo de moderación desde el primer arranque.
 
@@ -316,10 +324,11 @@ La base de datos viene con reportes de ejemplo en las categorías Alerta Bulos, 
 
 ## Roadmap
 
+- [x] Cobertura de tests automatizados completa con pytest (22 tests E2E, 100% de cobertura)
+- [x] Ampliación del panel de administración: asignación de roles y baneo directo de usuarios
+- [x] Implementación de sistema de emails transaccionales mediante Mailtrap Sandbox
 - [ ] Despliegue en Google Play Store
-- [ ] Ampliación del panel de administración: asignación de roles y baneo directo de usuarios
 - [ ] Reactivar el autocompletado predictivo de direcciones en el mapa (pausado para optimizar el consumo de tokens de la API de MapBox)
-- [ ] Cobertura de tests automatizados completa con pytest
 - [ ] Documentación técnica del código fuente del cliente Android
 - [ ] Integración de IA para análisis de patrones en las incidencias reportadas
 

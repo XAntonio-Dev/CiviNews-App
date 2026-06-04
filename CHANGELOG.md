@@ -6,9 +6,34 @@ Este proyecto sigue [Semantic Versioning](https://semver.org/spec/v2.0.0.html) y
 
 ---
 
+## [1.2.0] — 2026-06-04
+
+> Versión de cierre de curso. El foco de esta iteración ha estado en tres frentes: llevar la cobertura de tests al 100% con una batería E2E completa, dar al administrador control total sobre los usuarios de la plataforma y blindar la API para un despliegue real en producción. También se ha añadido un sistema de recuperación de contraseñas funcional con Mailtrap Sandbox y se han cerrado bugs de validación interna que habían sobrevivido desde versiones anteriores.
+
+---
+
+### Backend — API REST (FastAPI)
+
+#### Added
+
+- **Suite de tests E2E con cobertura del 100% (`pytest --cov=main`):** 22 tests que cubren de forma exhaustiva toda la lógica de negocio y seguridad del sistema. Escenarios validados: registro y login completos, límites antispam con respuesta `429 Too Many Requests`, protección CORS, integridad de perfiles de usuario y borrado en cascada al eliminar una cuenta. Cada test opera sobre una base de datos aislada que se inicializa y destruye en cada ejecución para garantizar la independencia entre pruebas.
+- **Mailtrap Sandbox — recuperación de contraseñas:** Integración del servicio Mailtrap Sandbox en el nuevo endpoint `POST /recuperar-password`. Permite probar el flujo completo de envío de emails transaccionales (token de recuperación incluido) en un entorno seguro y sin coste real. Las credenciales de Mailtrap se gestionan por variables de entorno, igual que el resto de secretos del sistema.
+- **Dashboard de administración — gestión de usuarios:** Tres nuevos endpoints protegidos por rol de administrador que cierran el ciclo de control sobre la plataforma:
+  - `GET /usuarios` — listado completo de usuarios registrados con soporte de búsqueda.
+  - `PATCH /usuarios/{id}/rol` — asignación o revocación del rol de administrador sobre cualquier cuenta.
+  - `DELETE /usuarios/{id}` — baneo permanente de un usuario, con borrado en cascada de todos sus reportes asociados. Mismo mecanismo `ON DELETE CASCADE` ya implementado en PostgreSQL.
+- **Configuración estricta de CORS (`allow_origins=[]`):** `CORSMiddleware` configurado para bloquear por defecto cualquier origen no autorizado. Imprescindible para el despliegue en producción: sin esta restricción, la API sería accesible desde cualquier dominio externo a través del navegador.
+
+#### Fixed
+
+- **Comunicación interna entre contenedores Docker (red `civinews_tester`):** Corregida la configuración de red en `docker-compose.yml` para que la API y la base de datos de tests se comuniquen por nombre de servicio en lugar de por dirección IP local. Elimina fallos de conexión intermitentes al ejecutar la suite de tests dentro del entorno Docker.
+- **Validación de `old_password` en el cambio de contraseña:** Resuelto un error de lógica en el endpoint de actualización de contraseña que en ciertos casos permitía que la validación de la contraseña actual devolviera un resultado incorrecto. El flujo ahora compara correctamente el hash almacenado antes de autorizar cualquier cambio.
+
+---
+
 ## [1.1.0] — 2026-04-18
 
-> Versión final del TFG. El grueso del trabajo de esta iteración ha estado en tres frentes: cerrar el ciclo completo de moderación en el backend, implementar la geolocalización híbrida con MapBox y dejar la app lista para desplegarse en producción real. También se ha dado un repaso serio a la privacidad, al diseño y a varios bugs que habían sobrevivido desde la versión anterior.
+> Versión final del TFG. El grueso del trabajo de esta iteración ha estado en tres frentes: cerrar el ciclo completo de moderación en el backend y dejar la app lista para desplegarse en producción real. También se ha dado un repaso serio a la privacidad, al diseño y a varios bugs que habían sobrevivido desde la versión anterior.
 
 ---
 
@@ -18,7 +43,7 @@ Este proyecto sigue [Semantic Versioning](https://semver.org/spec/v2.0.0.html) y
 
 - **Modo claro y oscuro (Material Design 3):** La interfaz se adapta automáticamente a las preferencias del sistema. No es cosmético: reduce la fatiga visual en uso prolongado y es uno de los estándares que se esperan hoy en día en cualquier app nativa.
 - **`AddReportScreen`:** Pantalla completa de creación de reportes. Incluye selector de categoría dinámico (cargado desde la API), campo de título, descripción, subida de imagen y el módulo de geolocalización con MapBox integrado.
-- **Geolocalización híbrida:** Combinación de un buscador de direcciones por texto (Mapbox Geocoding) y un marcador arrastrable en el mapa para el ajuste manual de coordenadas. Latitud y longitud se capturan con precisión y se envían al servidor junto al reporte.
+- **Geolocalización:** Buscador de direcciones por texto (Mapbox Geocoding). Latitud y longitud se capturan con precisión y se envían al servidor junto al reporte.
 - **`AdminScreen`:** Panel de moderación protegido por rol. Solo accesible si `is_admin == true`. Muestra la cola de reportes pendientes con toda la información necesaria para tomar una decisión, y expone dos acciones directas por tarjeta: aprobar o rechazar.
 - **Estados reactivos en `AdminScreen`:** `Loading`, `Success`, `NoData` y `Error` implementados para que el administrador sepa en todo momento qué está pasando, incluso cuando la cola está vacía o hay un problema de red.
 - **`ReportDetailScreen`:** Vista de detalle de un reporte con mini-mapa inmersivo integrado que sitúa la incidencia en contexto sin necesidad de salir de la app.

@@ -136,11 +136,11 @@ def get_user_profile(current_user: models.User = Depends(get_current_user)):
     # Al devolver el current_user, FastAPI lee el response_model y lo formatea automáticamente con el 'alias'
     return current_user
 
-@app.patch("/users/me/name", summary="Actualizar alias")
+@app.patch("/users/me/name", response_model=schemas.UserResponse, summary="Actualizar alias")
 def update_user_name(name_update: schemas.NameUpdateSchema, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    # Impido que cambien de nombre constantemente (cooldown de 14 días)
     new_name = name_update.name.strip()
-    if not new_name: raise HTTPException(status_code=400, detail="Alias no válido")
+    if not new_name:
+        raise HTTPException(status_code=400, detail="Alias no válido")
 
     if current_user.fecha_ultimo_cambio_alias:
         dias_pasados = (datetime.utcnow() - current_user.fecha_ultimo_cambio_alias).days
@@ -151,7 +151,8 @@ def update_user_name(name_update: schemas.NameUpdateSchema, current_user: models
     current_user.fecha_ultimo_cambio_alias = datetime.utcnow()
     db.commit()
     db.refresh(current_user)
-    return {"id": current_user.id, "name": current_user.alias, "email": current_user.email, "is_admin": current_user.is_admin}
+    return current_user
+
 
 @app.patch("/users/me/password", summary="Cambio de contraseña")
 def change_password(data: schemas.PasswordChangeSchema, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
