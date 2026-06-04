@@ -13,6 +13,15 @@ class UserCreate(BaseModel):
     email: EmailStr
     username: str
     password: str
+    
+class UserResponse(BaseModel):
+    id: UUID
+    email: EmailStr
+    alias: str
+    is_admin: bool
+    
+    class Config:
+        from_attributes = True
 
 class ReportResponse(BaseModel):
     id: UUID

@@ -3,8 +3,10 @@ package com.example.civinews.ui.screens.main
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.outlined.AccountCircle
+import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +26,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.civinews.ui.base.components.CiviNewsTopBar
 import com.example.civinews.ui.screens.admin.AdminScreen
+import com.example.civinews.ui.screens.audit.UserAuditScreen
 import com.example.civinews.ui.screens.profile.ProfileScreen
 import com.example.civinews.utils.Routes
 import com.example.civinews.ui.theme.workSansFontFamily
@@ -44,13 +47,18 @@ fun AdminMainScreen(
 
     val tabs = listOf(
         BottomNavItem(Routes.ADMIN_PENDING, "Moderación", Icons.Filled.Security, Icons.Outlined.Security),
+        BottomNavItem(Routes.ADMIN_USERS, "Usuarios", Icons.Filled.Group, Icons.Outlined.Group),
         BottomNavItem(Routes.ADMIN_PROFILE, "Perfil", Icons.Filled.AccountCircle, Icons.Outlined.AccountCircle)
     )
 
     Scaffold(
         topBar = {
             CiviNewsTopBar(
-                title = if (currentRoute == Routes.ADMIN_PROFILE) "Mi Perfil" else "CiviNews Admin",
+                title = when (currentRoute) {
+                    Routes.ADMIN_PROFILE -> "Mi Perfil"
+                    Routes.ADMIN_USERS -> "Auditoría"
+                    else -> "CiviNews Admin"
+                },
                 isDarkTheme = isDarkTheme,
                 onThemeChange = onThemeChange
             )
@@ -99,6 +107,10 @@ fun AdminMainScreen(
         ) {
             composable(Routes.ADMIN_PENDING) {
                 AdminScreen()
+            }
+
+            composable(Routes.ADMIN_USERS) {
+                UserAuditScreen()
             }
 
             composable(Routes.ADMIN_PROFILE) {

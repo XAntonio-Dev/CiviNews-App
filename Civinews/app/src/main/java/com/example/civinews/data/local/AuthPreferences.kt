@@ -35,4 +35,12 @@ class AuthPreferences(private val context: Context) {
             prefs[IS_ADMIN_KEY] = isAdmin
         }
     }
+
+    // Destruye la sesión borrando todos los datos
+    suspend fun clearSession() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(TOKEN_KEY)
+            prefs.remove(IS_ADMIN_KEY)
+        }
+    }
 }

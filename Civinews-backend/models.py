@@ -5,9 +5,6 @@ import uuid
 from datetime import datetime
 from database import Base
 
-# Modelos ORM de SQLAlchemy que representan las tablas de la base de datos PostgreSQL
-
-# Tabla usuarios: gestiona la identidad, autenticación y roles de acceso
 class User(Base):
     __tablename__ = "usuarios"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -18,10 +15,9 @@ class User(Base):
     fecha_registro = Column(DateTime, default=datetime.utcnow)
     fecha_ultimo_cambio_alias = Column(DateTime, nullable=True)
 
-    noticias = relationship("Noticia", back_populates="autor")
+    noticias = relationship("Noticia", back_populates="autor", cascade="all, delete-orphan")
 
 
-# Tabla canales: categorías temáticas que clasifican los reportes ciudadanos
 class Canal(Base):
     __tablename__ = "canales"
     id = Column(Integer, primary_key=True, index=True)
@@ -31,7 +27,6 @@ class Canal(Base):
     noticias = relationship("Noticia", back_populates="canal")
 
 
-# Tabla noticias: almacena los reportes ciudadanos con su estado de moderación y coordenadas
 class Noticia(Base):
     __tablename__ = "noticias"
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -44,7 +39,7 @@ class Noticia(Base):
     longitud = Column(Float, nullable=True)
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
 
-    autor_id = Column(UUID(as_uuid=True), ForeignKey("usuarios.id"))
+    autor_id = Column(UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="CASCADE"))
     canal_id = Column(Integer, ForeignKey("canales.id"))
 
     autor = relationship("User", back_populates="noticias")

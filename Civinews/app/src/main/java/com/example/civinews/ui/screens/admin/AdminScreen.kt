@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +61,11 @@ fun AdminScreen(
     viewModel: AdminViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
+
+    LaunchedEffect(Unit) {
+        viewModel.loadPendingReports()
+    }
+
     val events = AdminEvents(
         onApproveClick = viewModel::approveReport,
         onDeleteClick = viewModel::deleteReport,

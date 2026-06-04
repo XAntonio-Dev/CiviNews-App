@@ -55,6 +55,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.runtime.LaunchedEffect
 import coil.compose.SubcomposeAsyncImage
 import com.example.civinews.R
 import com.example.civinews.ui.base.screens.ErrorScreen
@@ -69,6 +70,10 @@ fun HomeScreen(
     onNavigateToAddReport: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.getData()
+    }
+
     val state = viewModel.state
     val events = HomeEvents(
         onCategorySelected = viewModel::selectCategory,

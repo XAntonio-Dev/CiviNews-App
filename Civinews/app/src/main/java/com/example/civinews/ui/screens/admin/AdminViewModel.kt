@@ -27,15 +27,15 @@ class AdminViewModel @Inject constructor(
     fun loadPendingReports() {
         viewModelScope.launch {
             state = AdminListState.Loading
-            try {
+            state = try {
                 val pending = repository.getPendingNoticias()
                 if (pending.isEmpty()) {
-                    state = AdminListState.NoData
+                    AdminListState.NoData
                 } else {
-                    state = AdminListState.Success(dataset = pending)
+                    AdminListState.Success(dataset = pending)
                 }
             } catch (e: Exception) {
-                state = AdminListState.Error(message = "Error de conexión: ${e.localizedMessage}")
+                AdminListState.Error(message = "Error de conexión: ${e.localizedMessage}")
             }
         }
     }

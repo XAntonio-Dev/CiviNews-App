@@ -27,8 +27,8 @@ object NetworkModule {
         return OkHttpClient.Builder()
             .addInterceptor(logging)
             .addInterceptor(authInterceptor)
-            .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS) // Tiempo extra para despertar a Render
-            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)    // Tiempo extra para despertar a Render
+            .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
             .build()
     }
 
@@ -38,6 +38,7 @@ object NetworkModule {
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://civinews-app.onrender.com/")
+            //.baseUrl("http://10.0.2.2:8000/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
@@ -48,6 +49,4 @@ object NetworkModule {
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
     }
-
-
 }

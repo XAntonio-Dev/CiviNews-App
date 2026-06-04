@@ -13,6 +13,7 @@ import com.example.civinews.data.models.user.CanalResponse
 import com.example.civinews.data.models.user.MessageResponse
 import com.example.civinews.data.models.user.NameUpdateRequest
 import com.example.civinews.data.models.user.PasswordChangeRequest
+import com.example.civinews.data.models.user.RoleUpdateResponse
 import com.example.civinews.data.models.user.UserResponse
 import retrofit2.Response
 import retrofit2.http.Body
@@ -21,6 +22,7 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
     @POST("login")
@@ -70,4 +72,16 @@ interface ApiService {
 
     @POST("users/forgot-password")
     suspend fun forgotPassword(@Body request: ForgotPasswordRequest): Response<MessageResponse>
+
+    @GET("admin/users/search")
+    suspend fun searchUsers(@Query("query") query: String): Response<List<UserResponse>>
+
+    @GET("admin/users")
+    suspend fun getAllUsers(): Response<List<UserResponse>>
+
+    @PATCH("admin/users/{user_id}/role")
+    suspend fun toggleUserRole(@Path("user_id") userId: String): Response<RoleUpdateResponse>
+
+    @DELETE("admin/users/{user_id}")
+    suspend fun banUser(@Path("user_id") userId: String): Response<Unit>
 }

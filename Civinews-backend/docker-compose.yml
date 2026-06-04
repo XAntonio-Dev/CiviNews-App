@@ -20,7 +20,6 @@ services:
     working_dir: /app
     volumes:
       - .:/app
-    # Exponemos el puerto de FastAPI al exterior
     ports:
       - "8000:8000"
     # Instalamos las librerías al vuelo y arrancamos con recarga automática 
@@ -29,6 +28,21 @@ services:
       uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       - db
+  e2e-tests:
+    image: python:3.11-slim
+    container_name: civinews_tester
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      # Apuntamos directo al servicio interno de Docker. 
+      - API_BASE_URL=http://api:8000
+    depends_on:
+      - api
+      - db
+    # Instala dependencias y se queda despierto en segundo plano
+    command: >
+      bash -c "pip install -r requirements-test.txt && sleep infinity"
 
 volumes:
   postgres_data:

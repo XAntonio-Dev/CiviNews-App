@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing import Optional
 
 # Carga y expone la configuración global de la aplicación desde las variables de entorno del archivo .env
 
@@ -7,6 +8,9 @@ class Settings(BaseSettings):
     secret_key: str
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60
+    
+    mailtrap_user: Optional[str] = None
+    mailtrap_pass: Optional[str] = None
 
     model_config = SettingsConfigDict(env_file=".env")
 

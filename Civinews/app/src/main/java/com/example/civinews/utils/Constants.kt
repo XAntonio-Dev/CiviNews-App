@@ -29,4 +29,5 @@ object Routes {
     const val ADMIN_PROFILE = "admin_profile"
     const val PRIVACY = "privacy"
     const val HELP = "help"
+    const val ADMIN_USERS = "admin_users"
 }

@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.civinews.ui.navigation.AppNavigation
 import com.example.civinews.ui.theme.CivinewsTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -19,16 +20,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // Gestionamos el estado del tema aquí para que afecte a toda la app
             val systemTheme = isSystemInDarkTheme()
             var isDarkTheme by remember { mutableStateOf(systemTheme) }
 
+            val mainViewModel: MainViewModel = hiltViewModel()
+            val startDestination = mainViewModel.startDestination
+            val isLoading = mainViewModel.isLoading
+
             CivinewsTheme(darkTheme = isDarkTheme) {
-                // Delegamos el flujo visual al AppNavigation
-                AppNavigation(
-                    isDarkTheme = isDarkTheme,
-                    onThemeChange = { isDarkTheme = !isDarkTheme }
-                )
+                // Solo pintamos la navegación cuando el disco nos dice la ruta correcta
+                if (!isLoading) {
+                    AppNavigation(
+                        startDestination = startDestination,
+                        isDarkTheme = isDarkTheme,
+                        onThemeChange = { isDarkTheme = !isDarkTheme }
+                    )
+                }
             }
         }
     }
